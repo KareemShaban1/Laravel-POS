@@ -16,13 +16,26 @@
 
     @if(session('locale') === 'ar')
     @vite(['resources/sass/app-rtl.scss', 'resources/js/app.js'])
-@else
+    @else
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-@endif
+    @endif
+
+    @if (env('APP_ENV') === 'local')
+    <style>
+        .content-wrapper {
+            width: 1400px !important;
+        }
+    </style>
+    @else
+    <style>
+        .content-wrapper {
+            width: 1200px !important;
+        }
+    </style>
+    @endif
 
 
-
-   @yield('css')
+    @yield('css')
     <script>
         window.APP = <?php echo json_encode([
                             'currency_symbol' => config('settings.currency_symbol'),

@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     @yield('css')
+    
 </head>
 
 <body class="hold-transition login-page">
