@@ -39,5 +39,9 @@ return [
     'cancel'            => 'إلغاء',
     'checkout'          => 'إتمام',
     'search_product'    => 'بحث عن منتج',
+    'VAT Rate'          => 'نسبة الضريبة',
+    'Discount Amount'   => 'مبلغ الخصم',
+    'Customer Name'     => 'اسم العميل',
+    'subtotal'          => 'المجموع الجزئى',
 
 ];

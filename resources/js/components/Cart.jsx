@@ -14,6 +14,9 @@ class Cart extends Component {
             barcode: "",
             search: "",
             customer_id: "",
+            customer_name: "",
+            vat_rate: 0,
+            discount_amount: 0,
             translations: {},
         };
 
@@ -25,8 +28,11 @@ class Cart extends Component {
 
         this.loadProducts = this.loadProducts.bind(this);
         this.handleChangeSearch = this.handleChangeSearch.bind(this);
-        this.handleSeach = this.handleSeach.bind(this);
+        this.handleSearch = this.handleSearch.bind(this);
         this.setCustomerId = this.setCustomerId.bind(this);
+        this.setCustomerName = this.setCustomerName.bind(this);
+        this.setVatRate = this.setVatRate.bind(this);
+        this.setDiscountAmount = this.setDiscountAmount.bind(this);
         this.handleClickSubmit = this.handleClickSubmit.bind(this);
         this.loadTranslations = this.loadTranslations.bind(this);
     }
@@ -61,18 +67,17 @@ class Cart extends Component {
     }
 
     loadProducts(search = "", paginate = false, page = 1) {
-        const params = new URLSearchParams()
-      
-        if (search) params.append("search", search)
-        if (paginate) params.append("paginate", true)
-        if (paginate) params.append("page", page) // Laravel pagination uses ?page=2
-      
+        const params = new URLSearchParams();
+
+        if (search) params.append("search", search);
+        if (paginate) params.append("paginate", true);
+        if (paginate) params.append("page", page); // Laravel pagination uses ?page=2
+
         axios.get(`/admin/cart-products?${params.toString()}`).then((res) => {
-          const products = res.data.data
-          this.setState({ products })
-        })
-      }
-      
+            const products = res.data.data;
+            this.setState({ products });
+        });
+    }
 
     handleOnChangeBarcode(event) {
         const barcode = event.target.value;
@@ -122,9 +127,22 @@ class Cart extends Component {
             });
     }
 
-    getTotal(cart) {
+    getSubtotal(cart) {
         const total = cart.map((c) => c.pivot.quantity * c.price);
-        return sum(total).toFixed(2);
+        return sum(total);
+    }
+
+    getTotal(cart) {
+        const subtotal = this.getSubtotal(cart);
+        const vatAmount = (subtotal * this.state.vat_rate) / 100;
+        const discountAmount = this.state.discount_amount;
+        const total = subtotal + vatAmount - discountAmount;
+        return Math.max(0, total).toFixed(2);
+    }
+
+    getVatAmount(cart) {
+        const subtotal = this.getSubtotal(cart);
+        return ((subtotal * this.state.vat_rate) / 100).toFixed(2);
     }
     handleClickDelete(product_id) {
         axios
@@ -139,11 +157,24 @@ class Cart extends Component {
             this.setState({ cart: [] });
         });
     }
+    typingTimeout = null;
+
     handleChangeSearch(event) {
         const search = event.target.value;
         this.setState({ search });
+
+        clearTimeout(this.typingTimeout);
+
+        this.typingTimeout = setTimeout(() => {
+            if (search.length >= 2) {
+                this.loadProducts(search);
+            } else if (search.length === 0) {
+                this.loadProducts(""); // رجّع كل المنتجات لو مفيش بحث
+            }
+        }, 300); // delay عشان ميعملش API call على كل key
     }
-    handleSeach(event) {
+
+    handleSearch(event) {
         if (event.keyCode === 13) {
             this.loadProducts(event.target.value);
         }
@@ -197,6 +228,18 @@ class Cart extends Component {
     setCustomerId(event) {
         this.setState({ customer_id: event.target.value });
     }
+
+    setCustomerName(event) {
+        this.setState({ customer_name: event.target.value });
+    }
+
+    setVatRate(event) {
+        this.setState({ vat_rate: parseFloat(event.target.value) || 0 });
+    }
+
+    setDiscountAmount(event) {
+        this.setState({ discount_amount: parseFloat(event.target.value) || 0 });
+    }
     handleClickSubmit() {
         Swal.fire({
             title: this.state.translations["received_amount"],
@@ -210,12 +253,28 @@ class Cart extends Component {
                 return axios
                     .post("/admin/orders", {
                         customer_id: this.state.customer_id,
+                        customer_name: this.state.customer_name,
+                        vat_rate: this.state.vat_rate,
+                        discount_amount: this.state.discount_amount,
+                        subtotal: this.getSubtotal(this.state.cart),
+                        vat_amount: this.getVatAmount(this.state.cart),
+                        total: this.getTotal(this.state.cart),
                         amount,
                     })
                     .then((res) => {
                         this.loadCart();
-                        Swal.fire("Success!", "Order created successfully", "success");
+                        Swal.fire(
+                            "Success!",
+                            "Order created successfully",
+                            "success"
+                        );
                         this.loadProducts();
+                        // clear vat rate and discount amount and customer name
+                        this.setState({
+                            vat_rate: 0,
+                            discount_amount: 0,
+                            customer_name: "",
+                        });
                         return res.data;
                     })
                     .catch((err) => {
@@ -247,24 +306,20 @@ class Cart extends Component {
                             </form>
                         </div>
                         <div className="col">
-                            <select
+                            <input
+                                type="text"
                                 className="form-control"
-                                onChange={this.setCustomerId}
-                            >
-                                <option value="">
-                                    {translations["general_customer"]}
-                                </option>
-                                {customers.map((cus) => (
-                                    <option
-                                        key={cus.id}
-                                        value={cus.id}
-                                    >{`${cus.first_name} ${cus.last_name}`}</option>
-                                ))}
-                            </select>
+                                placeholder={
+                                    translations["Customer Name"] ||
+                                    "Customer Name"
+                                }
+                                value={this.state.customer_name}
+                                onChange={this.setCustomerName}
+                            />
                         </div>
                     </div>
                     <div className="user-cart">
-                        <div className="card">
+                        <div className="card" style={{ minHeight: "300px", overflowY: "auto" }}>
                             <table className="table table-striped">
                                 <thead>
                                     <tr>
@@ -281,7 +336,7 @@ class Cart extends Component {
                                             <td>{c.name}</td>
                                             <td>
                                                 <input
-                                                    type="text"
+                                                    type="number"
                                                     className="form-control form-control-sm qty"
                                                     value={c.pivot.quantity}
                                                     onChange={(event) =>
@@ -315,10 +370,73 @@ class Cart extends Component {
                         </div>
                     </div>
 
+                    <div className="row mb-2">
+                        <div className="col-6">
+                            <label>{translations["VAT Rate"]} (%):</label>
+                            <input
+                                type="number"
+                                className="form-control form-control-sm"
+                                value={this.state.vat_rate}
+                                onChange={this.setVatRate}
+                                min="0"
+                                max="100"
+                                step="0.01"
+                            />
+                        </div>
+                        <div className="col-6">
+                            <label>{translations["Discount Amount"]}:</label>
+                            <input
+                                type="number"
+                                className="form-control form-control-sm"
+                                value={this.state.discount_amount}
+                                onChange={this.setDiscountAmount}
+                                min="0"
+                                step="0.01"
+                            />
+                        </div>
+                    </div>
+
                     <div className="row">
-                        <div className="col">{translations["total"]}:</div>
+                        <div className="col">
+                            {translations["subtotal"] || "Subtotal"}:
+                        </div>
                         <div className="col text-right">
-                            {window.APP.currency_symbol} {this.getTotal(cart)}
+                            {window.APP.currency_symbol}{" "}
+                            {this.getSubtotal(cart).toFixed(2)}
+                        </div>
+                    </div>
+
+                    {this.state.vat_rate > 0 && (
+                        <div className="row">
+                            <div className="col">
+                                VAT ({this.state.vat_rate}%):
+                            </div>
+                            <div className="col text-right">
+                                {window.APP.currency_symbol}{" "}
+                                {this.getVatAmount(cart)}
+                            </div>
+                        </div>
+                    )}
+
+                    {this.state.discount_amount > 0 && (
+                        <div className="row">
+                            <div className="col">Discount:</div>
+                            <div className="col text-right">
+                                -{window.APP.currency_symbol}{" "}
+                                {this.state.discount_amount.toFixed(2)}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="row">
+                        <div className="col">
+                            <strong>{translations["total"]}:</strong>
+                        </div>
+                        <div className="col text-right">
+                            <strong>
+                                {window.APP.currency_symbol}{" "}
+                                {this.getTotal(cart)}
+                            </strong>
                         </div>
                     </div>
                     <div className="row">
@@ -350,8 +468,7 @@ class Cart extends Component {
                             type="text"
                             className="form-control"
                             placeholder={translations["search_product"] + "..."}
-                            onChange={this.handleChangeSearch}
-                            onKeyDown={this.handleSeach}
+                            onChange={this.handleChangeSearch.bind(this)}
                         />
                     </div>
                     <div className="order-product">
@@ -362,6 +479,9 @@ class Cart extends Component {
                                 className="item"
                             >
                                 <img src={p.image_url} alt="" />
+                                <h5 className="mt-2">
+                                    {p.price} {window.APP.currency_symbol}
+                                </h5>
                                 <h5
                                     style={
                                         window.APP.warning_quantity > p.quantity
@@ -369,7 +489,7 @@ class Cart extends Component {
                                             : {}
                                     }
                                 >
-                                    {p.name}({p.quantity})
+                                    {p.name} ({p.quantity})
                                 </h5>
                             </div>
                         ))}

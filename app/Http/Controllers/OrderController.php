@@ -36,6 +36,12 @@ class OrderController extends Controller
     {
         $order = Order::create([
             'customer_id' => $request->customer_id,
+            'customer_name' => $request->customer_name,
+            'vat_rate' => $request->vat_rate ?? 0,
+            'vat_amount' => $request->vat_amount ?? 0,
+            'discount_amount' => $request->discount_amount ?? 0,
+            'subtotal' => $request->subtotal ?? 0,
+            'total' => $request->total ?? 0,
             'user_id' => $request->user()->id,
         ]);
 
