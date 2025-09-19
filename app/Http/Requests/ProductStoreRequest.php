@@ -24,6 +24,7 @@ class ProductStoreRequest extends FormRequest
     public function rules()
     {
         return [
+            'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'image' => 'nullable|image',

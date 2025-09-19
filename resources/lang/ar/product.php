@@ -1,0 +1,40 @@
+<?php
+
+return [
+          'title' => 'المنتجات',
+          'sure' => 'هل أنت متأكد؟',
+
+          'error_creating' => 'عذراً، حدث خطأ أثناء إنشاء المنتج.',
+          'success_creating' => 'تم إنشاء المنتج بنجاح.',
+          'error_updating' => 'عذراً، حدث خطأ أثناء تحديث المنتج.',
+          'success_updating' => 'تم تحديث المنتج بنجاح.',
+
+          'Create_Product' => 'إنشاء منتج',
+          'Name' => 'الاسم',
+          'Description' => 'الوصف',
+          'Image' => 'الصورة',
+          'Choose_file' => 'اختر ملف',
+          'Barcode' => 'الباركود',
+          'Price' => 'السعر',
+          'Quantity' => 'الكمية',
+          'Status' => 'الحالة',
+          'Edit_Product' => 'تعديل المنتج',
+          'Update' => 'تحديث',
+          'Product_List' => 'قائمة المنتجات',
+          'All_Products' => 'جميع المنتجات',
+          'Category' => 'الفئة',
+          'No_Category' => 'بدون فئة',
+          'Search_Product' => 'البحث في المنتجات',
+          'Has_Quantity' => 'له كمية',
+          'has_quantity' => 'نعم',
+          'not_has_quantity' => 'لا',
+          'ID' => 'المعرف',
+          'Created_At' => 'تاريخ الإنشاء',
+          'Updated_At' => 'تاريخ التحديث',
+          'Actions' => 'الإجراءات',
+          'sure' => 'هل أنت متأكد؟',
+          'really_delete' => 'هل تريد حقاً حذف هذا المنتج؟',
+          'yes_delete' => 'نعم، احذفه!',
+          'No' => 'لا',
+];
+

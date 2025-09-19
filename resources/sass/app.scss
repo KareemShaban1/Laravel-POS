@@ -54,6 +54,29 @@ $fa-font-path: "@fortawesome/fontawesome-free/webfonts";
     }
 }
 
+// Cart Category Tabs Styling
+#cartCategoryTabs {
+    .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        border: 1px solid transparent;
+        border-radius: 0.25rem 0.25rem 0 0;
+        color: #6c757d;
+        background-color: transparent;
+
+        &:hover {
+            border-color: #e9ecef #e9ecef #dee2e6;
+            color: #495057;
+        }
+
+        &.active {
+            color: #495057;
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+        }
+    }
+}
+
 .product-list {
     .product-img {
         max-width: 70px;

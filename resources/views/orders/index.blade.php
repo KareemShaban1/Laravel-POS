@@ -91,6 +91,21 @@
                                                                       <ion-icon size="samll" name="eye"></ion-icon>
                                                             </button>
 
+                                                            <button class="btn btn-sm btn-success btnPrintReceipt"
+                                                                      data-order-id="{{ $order->id }}"
+                                                                      data-customer-name="{{ $order->getCustomerName() }}"
+                                                                      data-total="{{ $order->total() }}"
+                                                                      data-received="{{ $order->receivedAmount() }}"
+                                                                      data-items="{{ json_encode($order->items) }}"
+                                                                      data-created-at="{{ $order->created_at }}"
+                                                                      data-payment="{{ isset($order->payments) && count($order->payments) > 0 ? $order->payments[0]->amount : 0 }}"
+                                                                      data-subtotal="{{ $order->getSubtotal() }}"
+                                                                      data-vat-rate="{{ $order->getVatRate() }}"
+                                                                      data-vat-amount="{{ $order->getVatAmount() }}"
+                                                                      data-discount-amount="{{ $order->getDiscountAmount() }}">
+                                                                      <i class="fas fa-print"></i>
+                                                            </button>
+
                                                             @if($order->total() > $order->receivedAmount())
                                                             <!-- Button for Partial Payment -->
                                                             <button class="btn btn-sm btn-primary" data-toggle="modal"
@@ -203,6 +218,7 @@
 @section('js')
 <script src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ asset('js/components/ReceiptPrinter.js') }}"></script>
 <script>
 // Use event delegation to bind to the document for dynamically generated elements
 $(document).on('click', '.btnShowInvoice', function(event) {
@@ -330,6 +346,33 @@ $(document).on('click', '.btnShowInvoice', function(event) {
     </div>
     `);
 });
+
+// Print Receipt Functionality
+$(document).on('click', '.btnPrintReceipt', function(event) {
+          // Fetch data from the clicked button
+          var button = $(this);
+          var orderData = {
+                    orderId: button.data('order-id'),
+                    customerName: button.data('customer-name'),
+                    totalAmount: button.data('total'),
+                    receivedAmount: button.data('received'),
+                    payment: button.data('payment'),
+                    createdAt: button.data('created-at'),
+                    items: button.data('items'),
+                    subtotal: button.data('subtotal'),
+                    vatRate: button.data('vat-rate'),
+                    vatAmount: button.data('vat-amount'),
+                    discountAmount: button.data('discount-amount')
+          };
+
+          // Use the ReceiptPrinter utility
+          if (window.ReceiptPrinter) {
+                    window.ReceiptPrinter.printReceipt(orderData);
+          } else {
+                    console.error('ReceiptPrinter not loaded');
+          }
+});
+
 $(document).ready(function() {
           // Event handler when the partial payment modal is triggered
           $('#partialPaymentModal').on('show.bs.modal', function(event) {

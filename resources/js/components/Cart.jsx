@@ -11,13 +11,17 @@ class Cart extends Component {
             cart: [],
             products: [],
             customers: [],
+            categories: [],
             barcode: "",
             search: "",
             customer_id: "",
             customer_name: "",
             vat_rate: 0,
             discount_amount: 0,
+            selectedCategoryId: "",
             translations: {},
+            loading: false,
+            productCache: {}, // Cache for products by category
         };
 
         this.loadCart = this.loadCart.bind(this);
@@ -35,6 +39,8 @@ class Cart extends Component {
         this.setDiscountAmount = this.setDiscountAmount.bind(this);
         this.handleClickSubmit = this.handleClickSubmit.bind(this);
         this.loadTranslations = this.loadTranslations.bind(this);
+        this.setSelectedCategory = this.setSelectedCategory.bind(this);
+        this.setSelectedCategoryById = this.setSelectedCategoryById.bind(this);
     }
 
     componentDidMount() {
@@ -43,6 +49,7 @@ class Cart extends Component {
         this.loadCart();
         this.loadProducts();
         this.loadCustomers();
+        this.loadCategories();
     }
 
     // load the transaltions for the react component
@@ -66,17 +73,54 @@ class Cart extends Component {
         });
     }
 
-    loadProducts(search = "", paginate = false, page = 1) {
+    loadCategories() {
+        axios.get(`/admin/categories-front`).then((res) => {
+            const categories = res.data;
+            this.setState({ categories });
+        });
+    }
+
+    loadProducts(search = "", paginate = false, page = 1, categoryId = "") {
+        // Create cache key
+        const cacheKey = `${categoryId}_${search}`;
+
+        // Check if we have cached data and no search term
+        if (!search && this.state.productCache[cacheKey]) {
+            this.setState({ products: this.state.productCache[cacheKey] });
+            return;
+        }
+
+        // Set loading state
+        this.setState({ loading: true });
+
         const params = new URLSearchParams();
 
         if (search) params.append("search", search);
         if (paginate) params.append("paginate", true);
         if (paginate) params.append("page", page); // Laravel pagination uses ?page=2
+        if (categoryId) params.append("category_id", categoryId);
 
-        axios.get(`/admin/cart-products?${params.toString()}`).then((res) => {
-            const products = res.data.data;
-            this.setState({ products });
-        });
+        axios
+            .get(`/admin/cart-products?${params.toString()}`)
+            .then((res) => {
+                const products = res.data.data;
+
+                // Cache the results if no search term
+                if (!search) {
+                    this.setState((prevState) => ({
+                        productCache: {
+                            ...prevState.productCache,
+                            [cacheKey]: products,
+                        },
+                    }));
+                }
+
+                this.setState({ products, loading: false });
+            })
+            .catch((error) => {
+                console.error("Error loading products:", error);
+                this.setState({ loading: false });
+            });
     }
 
     handleOnChangeBarcode(event) {
@@ -167,9 +211,14 @@ class Cart extends Component {
 
         this.typingTimeout = setTimeout(() => {
             if (search.length >= 2) {
-                this.loadProducts(search);
+                this.loadProducts(
+                    search,
+                    false,
+                    1,
+                    this.state.selectedCategoryId
+                );
             } else if (search.length === 0) {
-                this.loadProducts(""); // رجّع كل المنتجات لو مفيش بحث
+                this.loadProducts("", false, 1, this.state.selectedCategoryId); // رجّع كل المنتجات لو مفيش بحث
             }
         }, 300); // delay عشان ميعملش API call على كل key
     }
@@ -240,6 +289,22 @@ class Cart extends Component {
     setDiscountAmount(event) {
         this.setState({ discount_amount: parseFloat(event.target.value) || 0 });
     }
+
+    setSelectedCategory(event) {
+        const categoryId = event.target.value;
+        this.setState({ selectedCategoryId: categoryId });
+        this.loadProducts(this.state.search, false, 1, categoryId);
+    }
+
+    setSelectedCategoryById(categoryId) {
+        // Prevent multiple rapid clicks
+        if (this.state.loading) {
+            return;
+        }
+
+        this.setState({ selectedCategoryId: categoryId });
+        this.loadProducts(this.state.search, false, 1, categoryId);
+    }
     handleClickSubmit() {
         Swal.fire({
             title: this.state.translations["received_amount"],
@@ -289,7 +354,8 @@ class Cart extends Component {
         });
     }
     render() {
-        const { cart, products, customers, barcode, translations } = this.state;
+        const { cart, products, customers, categories, barcode, translations } =
+            this.state;
         return (
             <div className="row">
                 <div className="col-md-6 col-lg-4">
@@ -319,7 +385,10 @@ class Cart extends Component {
                         </div>
                     </div>
                     <div className="user-cart">
-                        <div className="card" style={{ minHeight: "300px", overflowY: "auto" }}>
+                        <div
+                            className="card"
+                            style={{ minHeight: "300px", overflowY: "auto" }}
+                        >
                             <table className="table table-striped">
                                 <thead>
                                     <tr>
@@ -471,28 +540,95 @@ class Cart extends Component {
                             onChange={this.handleChangeSearch.bind(this)}
                         />
                     </div>
-                    <div className="order-product">
-                        {products.map((p) => (
-                            <div
-                                onClick={() => this.addProductToCart(p.barcode)}
-                                key={p.id}
-                                className="item"
-                            >
-                                <img src={p.image_url} alt="" />
-                                <h5 className="mt-2">
-                                    {p.price} {window.APP.currency_symbol}
-                                </h5>
-                                <h5
-                                    style={
-                                        window.APP.warning_quantity > p.quantity
-                                            ? { color: "red" }
-                                            : {}
+
+                    {/* Category Tabs */}
+                    <div className="mb-3">
+                        <ul
+                            className="nav nav-tabs"
+                            id="cartCategoryTabs"
+                            role="tablist"
+                        >
+                            <li className="nav-item" role="presentation">
+                                <button
+                                    className={`nav-link ${
+                                        this.state.selectedCategoryId === ""
+                                            ? "active"
+                                            : ""
+                                    }`}
+                                    onClick={() =>
+                                        this.setSelectedCategoryById("")
                                     }
+                                    type="button"
+                                    disabled={this.state.loading}
                                 >
-                                    {p.name} ({p.quantity})
-                                </h5>
+                                    {translations["All_Products"] ||
+                                        "All Products"}
+                                </button>
+                            </li>
+                            {categories.map((category) => (
+                                <li
+                                    key={category.id}
+                                    className="nav-item"
+                                    role="presentation"
+                                >
+                                    <button
+                                        className={`nav-link ${
+                                            this.state.selectedCategoryId ===
+                                            category.id.toString()
+                                                ? "active"
+                                                : ""
+                                        }`}
+                                        onClick={() =>
+                                            this.setSelectedCategoryById(
+                                                category.id.toString()
+                                            )
+                                        }
+                                        type="button"
+                                        disabled={this.state.loading}
+                                    >
+                                        {category.name}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="order-product">
+                        {this.state.loading ? (
+                            <div className="text-center p-4">
+                                <div
+                                    className="spinner-border text-primary"
+                                    role="status"
+                                >
+                                    <span className="sr-only">Loading...</span>
+                                </div>
+                                <p className="mt-2">Loading products...</p>
                             </div>
-                        ))}
+                        ) : (
+                            products.map((p) => (
+                                <div
+                                    onClick={() =>
+                                        this.addProductToCart(p.barcode)
+                                    }
+                                    key={p.id}
+                                    className="item"
+                                >
+                                    <img src={p.image_url} alt="" />
+                                    <h5 className="mt-2">
+                                        {p.price} {window.APP.currency_symbol}
+                                    </h5>
+                                    <h5
+                                        style={
+                                            window.APP.warning_quantity >
+                                            p.quantity
+                                                ? { color: "red" }
+                                                : {}
+                                        }
+                                    >
+                                        {p.name} ({p.quantity})
+                                    </h5>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Category;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
@@ -18,6 +19,7 @@ class ProductFactory extends Factory
     {
         $has_quantity = fake()->boolean(50);
         return [
+            'category_id' => Category::inRandomOrder()->first()->id,
             'name' => fake()->unique()->word(),
             'description' => fake()->sentence(),
             'price' => fake()->numberBetween(100, 1000),

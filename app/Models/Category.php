@@ -2,21 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-class Product extends Model
+class Category extends Model
 {
+    /** @use HasFactory<\Database\Factories\CategoryFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'name',
-        'category_id',
         'description',
         'image',
-        'barcode',
-        'price',
-        'quantity',
-        'status',
-        'has_quantity'
+        'status'
     ];
 
     public function getImageUrl()
@@ -27,8 +26,8 @@ class Product extends Model
         return asset('images/img-placeholder.jpg');
     }
 
-    public function category()
+    public function products()
     {
-        return $this->belongsTo(Category::class);
+        return $this->hasMany(Product::class);
     }
 }

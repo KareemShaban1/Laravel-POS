@@ -3,6 +3,7 @@
         <tr>
             <th>{{ __('product.ID') }}</th>
             <th>{{ __('product.Name') }}</th>
+            <th>{{ __('product.Category') }}</th>
             <th>{{ __('product.Image') }}</th>
             <th>{{ __('product.Barcode') }}</th>
             <th>{{ __('product.Price') }}</th>
@@ -19,6 +20,13 @@
             <tr>
                 <td>{{$product->id}}</td>
                 <td>{{$product->name}}</td>
+                <td>
+                    @if($product->category)
+                        <span class="badge badge-info">{{ $product->category->name }}</span>
+                    @else
+                        <span class="badge badge-secondary">{{ __('product.No_Category') }}</span>
+                    @endif
+                </td>
                 <td><img class="product-img" src="{{ Storage::url($product->image) }}" alt=""></td>
                 <td>{{$product->barcode}}</td>
                 <td>{{$product->price}}</td>

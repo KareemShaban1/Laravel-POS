@@ -13,6 +13,23 @@
             @method('PUT')
 
             <div class="form-group">
+                <label for="category_id">{{ __('product.Category') }}</label>
+                <select name="category_id" class="form-control @error('category_id') is-invalid @enderror" id="category_id">
+                    <option value="">{{ __('product.Select_Category') }}</option>
+                    @foreach ($categories as $category)
+                    <option value="{{ $category->id }}" 
+                    {{ old('category_id') == $category->id || $product->category_id == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                    @endforeach
+                </select>
+                @error('category_id')
+                <span class="invalid-feedback" role="alert">
+                    <strong>{{ $message }}</strong>
+                </span>
+                @enderror
+
+            </div>
+
+            <div class="form-group">
                 <label for="name">{{ __('product.Name') }}</label>
                 <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" id="name"
                     placeholder="{{ __('product.Name') }}" value="{{ old('name', $product->name) }}">
@@ -120,7 +137,7 @@
 @section('js')
 <script src="{{ asset('plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         bsCustomFileInput.init();
     });
 </script>
