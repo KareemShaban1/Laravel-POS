@@ -16,7 +16,7 @@
                                                   alt="User Image">
                               </div>
                               <div class="info">
-                                        <a href="#" class="d-block">{{ auth()->user()->getFullname() }}</a>
+                                        <a href="#" class="d-block">{{ auth()->user()->name }}</a>
                               </div>
                     </div> -->
 
@@ -31,12 +31,29 @@
                                                   </a>
                                         </li>
                                         <li class="nav-item has-treeview">
+                                                  <a href="{{ route('roles.index') }}"
+                                                            class="nav-link {{ activeSegment('roles') }}">
+                                                            <i class="nav-icon fas fa-user-lock"></i>
+                                                            <p>{{ __('role.title') }}</p>
+                                                  </a>
+                                        </li>
+                                        <li class="nav-item has-treeview">
+                                                  <a href="{{ route('users.index') }}"
+                                                            class="nav-link {{ activeSegment('users') }}">
+                                                            <i class="nav-icon fas fa-user"></i>
+                                                            <p>{{ __('user.title') }}</p>
+                                                  </a>
+                                        </li>
+                                        <!-- categories -->
+                                        <li class="nav-item has-treeview">
                                                   <a href="{{ route('categories.index') }}"
                                                             class="nav-link {{ activeSegment('categories') }}">
-                                                            <i class="nav-icon fas fa-th-large"></i>
+                                                            <i class="nav-icon fas fa-boxes"></i>
                                                             <p>{{ __('category.title') }}</p>
                                                   </a>
                                         </li>
+
+                                        <!-- products -->
                                         <li class="nav-item has-treeview">
                                                   <a href="{{ route('products.index') }}"
                                                             class="nav-link {{ activeSegment('products') }}">
@@ -44,6 +61,8 @@
                                                             <p>{{ __('product.title') }}</p>
                                                   </a>
                                         </li>
+
+
                                         <li class="nav-item has-treeview">
                                                   <a href="{{ route('cart.index') }}"
                                                             class="nav-link {{ activeSegment('cart') }}">

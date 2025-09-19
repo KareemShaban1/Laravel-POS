@@ -7,8 +7,10 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,6 +41,11 @@ Route::prefix('admin')->middleware(['auth', 'locale'])->group(function () {
 
     Route::get('/purchase', [PurchaseController::class, 'index'])->name('purchase.cart.index');
     Route::post('/orders/partial-payment', [OrderController::class, 'partialPayment'])->name('orders.partial-payment');
+
+    Route::get('roles/data', [RoleController::class, 'data'])->name('roles.data');
+    Route::resource('roles', RoleController::class);
+    Route::get('users/data', [UserController::class, 'data'])->name('users.data');
+    Route::resource('users', UserController::class);
 
     Route::get('/locale/{type}', function ($type) {
         $translations = trans($type);

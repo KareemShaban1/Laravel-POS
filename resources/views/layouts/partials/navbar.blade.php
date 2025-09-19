@@ -29,7 +29,7 @@
         <!-- User Account Dropdown -->
         <li class="nav-item dropdown">
             <a class="nav-link" data-toggle="dropdown" href="#">
-                <i class="fas fa-user-circle"></i> {{ auth()->user()->getFullname() }}
+                <i class="fas fa-user-circle"></i> {{ auth()->user()->name }}
             </a>
             <div class="dropdown-menu dropdown-menu-right">
                 <a href="{{ route('settings.index') }}" class="dropdown-item">
