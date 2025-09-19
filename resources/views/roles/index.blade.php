@@ -1,21 +1,13 @@
 @extends('layouts.admin')
+@section('content-actions')
+@section('content-header', __('role.title'))
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+                        <i class="mdi mdi-plus"></i> {{__('Add Role')}}
+                    </button>
+                    @endsection
 
 @section('content')
 <div class="container-fluid">
-    <!-- start page title -->
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box">
-                <div class="page-title-right">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
-                        <i class="mdi mdi-plus"></i> {{__('Add Role')}}
-                    </button>
-                </div>
-                <h4 class="page-title">{{__('Roles')}}</h4>
-            </div>
-        </div>
-    </div>
-    <!-- end page title -->
 
     <div class="row">
         <div class="col-12">

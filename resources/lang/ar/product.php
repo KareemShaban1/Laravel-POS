@@ -36,5 +36,6 @@ return [
           'really_delete' => 'هل تريد حقاً حذف هذا المنتج؟',
           'yes_delete' => 'نعم، احذفه!',
           'No' => 'لا',
+          'Select_Category' => 'اختر الفئة',
 ];
 

@@ -1,19 +1,14 @@
 @extends('layouts.admin')
+@section('content-header', __('user.title'))
+@section('content-actions')
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" onclick="resetForm()">
+                        <i class="fa fa-plus"></i> {{ __('Add User') }}
+                    </button>
+                    @endsection
 
 @section('content')
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box">
-                <div class="page-title-right">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" onclick="resetForm()">
-                        <i class="fa fa-plus"></i> {{ __('Add User') }}
-                    </button>
-                </div>
-                <h4 class="page-title">{{ __('Users') }}</h4>
-            </div>
-        </div>
-    </div>
+   
 
     <div class="row">
         <div class="col-12">
